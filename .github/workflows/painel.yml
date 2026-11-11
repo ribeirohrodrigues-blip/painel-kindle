@@ -23,10 +23,10 @@ jobs:
       name: github-pages
       url: ${{ steps.publicar.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -36,7 +36,7 @@ jobs:
         env:
           GOOGLE_WEATHER_KEY: ${{ secrets.GOOGLE_WEATHER_KEY }}
           CHROME_PATH: /usr/bin/google-chrome
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: saida
       - id: publicar
