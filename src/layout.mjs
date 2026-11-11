@@ -1,101 +1,63 @@
-// Página 1 do painel: clima de Janaúba (no estilo do post) + calendário do dia. Tela do Kindle: 600x800.
+// Página de 800 × 600: clima e calendário com leitura ampliada para o Kindle.
 import { icone } from './icones.mjs';
 import { LOCAL } from './clima.mjs';
 import { MESES, SEMANA } from './calendario.mjs';
 
-const esc = (s = '') => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-const grau = (n) => (Number.isFinite(n) ? `${n}°` : '–');
+const esc = (s = '') => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const grau = n => Number.isFinite(n) ? `${n}°` : '–';
+const numero = n => Number.isFinite(n) ? n : '–';
 
-export function paginaClima({ clima: c, cal, atualizado }) {
-  const horas = c.horas
-    .map((h) => `<div class="h"><div class="hh">${h.hora}</div>${icone(h.tipo, 34, 1.6)}<div class="ht">${grau(h.temp)}</div><div class="hc">${h.chuva}%</div></div>`)
-    .join('');
-
-  const cab = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d) => `<div class="gc">${d}</div>`).join('');
-  const dias = cal.grade
-    .map((g) => (g ? `<div class="gd${g.hoje ? ' hoje' : ''}${g.feriado ? ' fer' : ''}">${g.dia}</div>` : '<div class="gd"></div>'))
-    .join('');
-
+export function paginaClima({ clima: c, cal, atualizado, fontesCSS = '' }) {
+  const horas = c.horas.slice(0, 7).map(h => `<div class="hora"><span class="hh">${esc(h.hora)}</span>${icone(h.tipo, 34, 1.8)}<strong>${grau(h.temp)}</strong><span class="chuva">${numero(h.chuva)}%</span></div>`).join('');
+  const cab = ['D','S','T','Q','Q','S','S'].map(d => `<div class="gc">${d}</div>`).join('');
+  const dias = cal.grade.map(g => g ? `<div class="gd${g.hoje ? ' hoje' : ''}${g.feriado ? ' fer' : ''}">${g.dia}</div>` : '<div class="gd"></div>').join('');
+  const dia = (rotulo, d) => `<section class="dia"><div class="rotulo">${rotulo}</div><div class="range">${icone(d?.tipo, 38, 1.8)}<b>${grau(d?.max)} <span>/ ${grau(d?.min)}</span></b></div><p class="condicao">${esc(d?.descricao || 'Sem previsão')}</p><p class="detalhe">${numero(d?.chuva)}% de chuva</p><p class="detalhe">Vento ${numero(d?.vento ?? c.atual.vento)} km/h</p></section>`;
   const linhas = [];
   if (cal.feriado) {
-    const rot = cal.feriado.tipo === 'feriado' ? 'Feriado nacional' : cal.feriado.tipo === 'facultativo' ? 'Ponto facultativo' : 'Data especial';
-    linhas.push(`<div class="selo"><span>${rot}</span>${esc(cal.feriado.nome)}</div>`);
+    const rot = cal.feriado.tipo === 'feriado' ? 'Feriado' : cal.feriado.tipo === 'facultativo' ? 'Ponto facultativo' : 'Data especial';
+    linhas.push(`<p class="li especial"><b>${rot}</b> ${esc(cal.feriado.nome)}</p>`);
   }
-  if (cal.comemorativas.length) linhas.push(`<div class="li"><b>Comemora-se</b> ${cal.comemorativas.map(esc).join(' · ')}</div>`);
-  if (cal.fato) linhas.push(`<div class="li fato"><b>Neste dia, em ${cal.fato.ano}</b> ${esc(cal.fato.texto)}.</div>`);
-  if (cal.nascimento) linhas.push(`<div class="li"><b>Nasceu em ${cal.nascimento.ano}</b> ${esc(cal.nascimento.texto)}</div>`);
-  if (!linhas.length) linhas.push('<div class="li">Nenhuma data especial hoje.</div>');
-
-  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=block" rel="stylesheet">
+  if (cal.comemorativas?.length) linhas.push(`<p class="li comemoracoes"><b>Comemora-se</b> ${cal.comemorativas.map(esc).join(' · ')}</p>`);
+  if (cal.fato) linhas.push(`<p class="li fato"><b>Neste dia, em ${esc(cal.fato.ano)}</b> ${esc(cal.fato.texto)}.</p>`);
+  if (cal.nascimento) linhas.push(`<p class="li nascimento"><b>Nasceu em ${esc(cal.nascimento.ano)}</b> ${esc(cal.nascimento.texto)}</p>`);
+  if (!linhas.length) linhas.push('<p class="li">Nenhuma data especial hoje.</p>');
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=800">
+<!-- Noto Sans, SIL Open Font License. Licença em NotoSans-OFL.txt. -->
+<style>${fontesCSS}</style>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:600px;height:800px;background:#fff;color:#000;font-family:'Noto Sans',sans-serif;overflow:hidden}
-body{padding:14px 22px 0}
-.topo{display:flex;justify-content:center;font-size:14px;height:22px;align-items:center;color:#222}
-.cidade{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1.5px solid #000;padding:4px 0 6px;margin-top:2px}
-.cidade b{font-size:17px;font-weight:600}
-.cidade span{font-size:14px;color:#222}
-.atual{display:flex;border-bottom:1.5px solid #000;height:236px}
-.esq{width:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
-.big{display:flex;align-items:center;gap:6px}
-.big .t{font-size:92px;font-weight:700;line-height:1;letter-spacing:-2px}
-.desc{font-size:21px;margin-top:6px}
-.sens{font-size:14.5px;color:#111}
-.dir{flex:1;padding:16px 0 0 18px;display:flex;flex-direction:column}
-.rot{font-size:14px;color:#222}
-.mm{font-size:28px;font-weight:700;line-height:1.15}
-.cond{font-size:17px;margin-top:4px}
-.det{font-size:14px;color:#111;margin-top:2px}
-.amanha{border-top:1px solid #000;margin-top:12px;padding-top:10px;display:flex;gap:12px;align-items:center}
-.amanha .mm{font-size:22px}
-.horas{display:flex;justify-content:space-between;padding:12px 4px 10px;border-bottom:1.5px solid #000}
-.h{display:flex;flex-direction:column;align-items:center;gap:4px;width:70px}
-.hh{font-size:13.5px;color:#222}
-.ht{font-size:17px;font-weight:700}
-.hc{font-size:13px;color:#222}
-.calcab{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0 8px}
-.calcab b{font-size:17px;font-weight:600}
-.calcab span{font-size:14.5px}
-.cal{display:flex;gap:16px}
-.tile{width:132px;height:148px;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.tile .m{font-size:15px;letter-spacing:2px;text-transform:uppercase;font-weight:600}
-.tile .d{font-size:66px;font-weight:700;line-height:1.05}
-.tile .s{font-size:15px}
-.grade{flex:1;display:grid;grid-template-columns:repeat(7,1fr);row-gap:1px;align-content:start}
-.gc{font-size:12.5px;font-weight:700;text-align:center;padding-bottom:3px}
-.gd{font-size:14px;text-align:center;height:21px;line-height:21px}
-.gd.fer{font-weight:700;text-decoration:underline}
-.gd.hoje{background:#000;color:#fff;font-weight:700;border-radius:3px}
-.fatos{margin-top:12px;display:flex;flex-direction:column;gap:8px}
-.selo{font-size:16px;font-weight:600}
-.selo span{background:#000;color:#fff;font-size:12.5px;padding:2px 7px;margin-right:8px;border-radius:2px;text-transform:uppercase;letter-spacing:.5px;vertical-align:2px}
-.li{font-size:15.5px;line-height:1.34;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
-.li.fato{-webkit-line-clamp:3}
-.li b{font-weight:700;margin-right:4px}
-</style></head><body>
-<div class="topo">Atualizado ${atualizado}</div>
-<div class="cidade"><b>${esc(LOCAL.nome)}</b><span>Minas Gerais</span></div>
-<div class="atual">
-  <div class="esq">
-    <div class="big">${icone(c.atual.tipo, 112, 1.3)}<div class="t">${grau(c.atual.temp)}</div></div>
-    <div class="desc">${esc(c.atual.descricao)}</div>
-    <div class="sens">Sensação ${grau(c.atual.sensacao)} · Umidade ${c.atual.umidade}%</div>
-  </div>
-  <div class="dir">
-    <div class="rot">Hoje</div>
-    <div class="mm">${grau(c.hoje?.max)} / ${grau(c.hoje?.min)}</div>
-    <div class="cond">${esc(c.hoje?.descricao)}</div>
-    <div class="det">${c.hoje?.chuva ?? 0}% chuva · ${c.hoje?.vento ?? c.atual.vento} km/h</div>
-    <div class="amanha">${icone(c.amanha?.tipo, 44, 1.5)}<div><div class="rot">Amanhã</div><div class="mm">${grau(c.amanha?.max)} / ${grau(c.amanha?.min)}</div><div class="det">${c.amanha?.chuva ?? 0}% chuva</div></div></div>
-  </div>
-</div>
-<div class="horas">${horas}</div>
-<div class="calcab"><b>Calendário</b><span>${SEMANA[cal.semana].replace(/^./, (x) => x.toUpperCase())}, ${cal.dia} de ${MESES[cal.mes - 1]} de ${cal.ano}</span></div>
-<div class="cal">
-  <div class="tile"><div class="m">${MESES[cal.mes - 1].slice(0, 3)}</div><div class="d">${cal.dia}</div><div class="s">${SEMANA[cal.semana].split('-')[0]}</div></div>
-  <div class="grade">${cab}${dias}</div>
-</div>
-<div class="fatos">${linhas.join('')}</div>
+html,body{width:800px;height:600px;background:#fff;color:#000;font-family:'Noto Sans',Arial,sans-serif;overflow:hidden}
+body{padding:14px 20px 12px;font-size:20px}
+.topo{height:40px;display:flex;align-items:flex-start;justify-content:space-between;border-bottom:2px solid #000;padding-right:112px}
+.cidade{font-size:23px;font-weight:700;white-space:nowrap}.cidade span{font-size:18px;font-weight:400}
+.atualizado{font-size:18px;line-height:30px}
+.atual{height:176px;display:grid;grid-template-columns:300px 1fr 1fr;border-bottom:2px solid #000;gap:14px;padding:10px 0}
+.agora{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0}
+.big{display:flex;align-items:center;gap:6px;height:107px}.big svg{width:105px;height:105px;flex-shrink:0}
+.temperatura{font-size:108px;font-weight:700;line-height:1;letter-spacing:-5px}
+.descricao{font-size:25px;line-height:31px;text-align:center;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sensacao{font-size:18px;line-height:25px;white-space:nowrap}
+.dia{border-left:1px solid #000;padding-left:14px;min-width:0}
+.rotulo{font-size:20px;font-weight:700;line-height:25px}
+.range{display:flex;gap:6px;align-items:center;height:43px;white-space:nowrap}.range svg{flex-shrink:0}.range b{font-size:32px;letter-spacing:-1.3px}.range span{font-size:28px;font-weight:500}
+.condicao{font-size:19px;line-height:23px;height:46px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.detalhe{font-size:18px;line-height:23px;white-space:nowrap}
+.horas{height:111px;display:grid;grid-template-columns:repeat(7,1fr);border-bottom:2px solid #000;padding:6px 0 5px}
+.hora{display:flex;flex-direction:column;align-items:center;gap:0;min-width:0}.hh{font-size:18px;line-height:22px}.hora strong{font-size:23px;line-height:25px}.chuva{font-size:18px;line-height:22px}
+.calcab{height:36px;display:flex;align-items:center;justify-content:space-between}.calcab b{font-size:21px}.calcab span{font-size:18px}
+.cal{height:209px;display:grid;grid-template-columns:100px 232px 1fr;gap:16px;min-width:0}
+.tile{height:178px;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}.tile .m{font-size:19px;letter-spacing:2px;font-weight:700}.tile .d{font-size:76px;font-weight:700;line-height:1.12}.tile .s{font-size:18px}
+.mes{font-size:20px;line-height:27px;font-weight:700;text-transform:capitalize}
+.grade{display:grid;grid-template-columns:repeat(7,1fr);align-content:start;row-gap:0}
+.gc{font-size:18px;line-height:24px;font-weight:700;text-align:center}.gd{font-size:20px;text-align:center;height:25px;line-height:25px}.gd.fer{font-weight:700;text-decoration:underline}.gd.hoje{background:#000;color:#fff;font-weight:700;border-radius:2px}
+.fatos{display:flex;flex-direction:column;gap:7px;min-width:0;height:209px;overflow:hidden;border-left:1px solid #000;padding-left:14px}
+.li{font-size:19px;line-height:23.5px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.li b{font-weight:700}.li.fato{-webkit-line-clamp:3}.li.especial{font-weight:500}.li.especial b{background:#000;color:#fff;padding:0 4px}
+.tem-feriado .comemoracoes{-webkit-line-clamp:1}.tem-feriado .fato{-webkit-line-clamp:2}.tem-feriado .nascimento{-webkit-line-clamp:1}
+</style></head><body class="${cal.feriado ? 'tem-feriado' : ''}">
+<header class="topo"><div class="cidade">${esc(LOCAL.nome)} <span>· Minas Gerais</span></div><span class="atualizado">Atualizado ${esc(atualizado)}</span></header>
+<main><div class="atual"><section class="agora"><div class="big">${icone(c.atual.tipo,105,1.45)}<strong class="temperatura">${grau(c.atual.temp)}</strong></div><p class="descricao">${esc(c.atual.descricao)}</p><p class="sensacao">Sensação ${grau(c.atual.sensacao)} · Umidade ${numero(c.atual.umidade)}%</p></section>${dia('Hoje',c.hoje)}${dia('Amanhã',c.amanha)}</div>
+<section class="horas" aria-label="Previsão por horário">${horas}</section>
+<header class="calcab"><b>Calendário</b><span>${esc(SEMANA[cal.semana].replace(/^./, x=>x.toUpperCase()))}, ${cal.dia} de ${MESES[cal.mes-1]} de ${cal.ano}</span></header>
+<section class="cal"><div class="tile"><span class="m">${MESES[cal.mes-1].slice(0,3).toUpperCase()}</span><span class="d">${cal.dia}</span><span class="s">${SEMANA[cal.semana].split('-')[0]}</span></div><div><div class="mes">${MESES[cal.mes-1]}</div><div class="grade">${cab}${dias}</div></div><div class="fatos">${linhas.join('')}</div></section></main>
 </body></html>`;
 }
