@@ -27,7 +27,7 @@ export function paginaClima({ clima: c, cal, atualizado, fontesCSS = '' }) {
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:800px;height:600px;background:#fff;color:#000;font-family:'Noto Sans',Arial,sans-serif;overflow:hidden}
-body{padding:14px 20px 12px;font-size:20px}
+body{padding:14px 20px 5px;font-size:20px}
 .topo{height:40px;display:flex;align-items:flex-start;justify-content:space-between;border-bottom:2px solid #000;padding-right:112px}
 .cidade{font-size:23px;font-weight:700;white-space:nowrap}.cidade span{font-size:18px;font-weight:400}
 .atualizado{font-size:18px;line-height:30px}
@@ -44,14 +44,14 @@ body{padding:14px 20px 12px;font-size:20px}
 .detalhe{font-size:18px;line-height:23px;white-space:nowrap}
 .horas{height:111px;display:grid;grid-template-columns:repeat(7,1fr);border-bottom:2px solid #000;padding:6px 0 5px}
 .hora{display:flex;flex-direction:column;align-items:center;gap:0;min-width:0}.hh{font-size:18px;line-height:22px}.hora strong{font-size:23px;line-height:25px}.chuva{font-size:18px;line-height:22px}
-.calcab{height:36px;display:flex;align-items:center;justify-content:space-between}.calcab b{font-size:21px}.calcab span{font-size:18px}
-.cal{height:209px;display:grid;grid-template-columns:100px 232px 1fr;gap:16px;min-width:0}
-.tile{height:178px;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}.tile .m{font-size:19px;letter-spacing:2px;font-weight:700}.tile .d{font-size:76px;font-weight:700;line-height:1.12}.tile .s{font-size:18px}
-.mes{font-size:20px;line-height:27px;font-weight:700;text-transform:capitalize}
+.calcab{height:32px;display:flex;align-items:center;justify-content:space-between}.calcab b{font-size:23px}.calcab span{font-size:20px}
+.cal{height:222px;display:grid;grid-template-columns:100px 210px 1fr;gap:12px;min-width:0}
+.tile{height:196px;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}.tile .m{font-size:21px;letter-spacing:2px;font-weight:700}.tile .d{font-size:84px;font-weight:700;line-height:1.12}.tile .s{font-size:20px}
+.mes{font-size:22px;line-height:27px;font-weight:700;text-transform:capitalize}
 .grade{display:grid;grid-template-columns:repeat(7,1fr);align-content:start;row-gap:0}
-.gc{font-size:18px;line-height:24px;font-weight:700;text-align:center}.gd{font-size:20px;text-align:center;height:25px;line-height:25px}.gd.fer{font-weight:700;text-decoration:underline}.gd.hoje{background:#000;color:#fff;font-weight:700;border-radius:2px}
-.fatos{display:flex;flex-direction:column;gap:7px;min-width:0;height:209px;overflow:hidden;border-left:1px solid #000;padding-left:14px}
-.li{font-size:19px;line-height:23.5px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.li b{font-weight:700}.li.fato{-webkit-line-clamp:3}.li.especial{font-weight:500}.li.especial b{background:#000;color:#fff;padding:0 4px}
+.gc{font-size:20px;line-height:25px;font-weight:700;text-align:center}.gd{font-size:22px;text-align:center;height:28px;line-height:28px}.gd.fer{font-weight:700;text-decoration:underline}.gd.hoje{background:#000;color:#fff;font-weight:700;border-radius:2px}
+.fatos{display:flex;flex-direction:column;gap:5px;min-width:0;height:222px;overflow:hidden;border-left:1px solid #000;padding-left:12px}
+.li{font-size:21px;line-height:23.5px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;flex-shrink:0}.li b{font-weight:700}.li.comemoracoes{-webkit-line-clamp:4}.li.fato{-webkit-line-clamp:3}.li.especial{font-weight:500}.li.especial b{background:#000;color:#fff;padding:0 4px}
 .tem-feriado .comemoracoes{-webkit-line-clamp:1}.tem-feriado .fato{-webkit-line-clamp:2}.tem-feriado .nascimento{-webkit-line-clamp:1}
 </style></head><body class="${cal.feriado ? 'tem-feriado' : ''}">
 <header class="topo"><div class="cidade">${esc(LOCAL.nome)} <span>· Minas Gerais</span></div><span class="atualizado">Atualizado ${esc(atualizado)}</span></header>
