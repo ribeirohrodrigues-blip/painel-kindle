@@ -45,7 +45,7 @@ body{padding:14px 20px 5px;font-size:20px}
 .horas{height:111px;display:grid;grid-template-columns:repeat(7,1fr);border-bottom:2px solid #000;padding:6px 0 5px}
 .hora{display:flex;flex-direction:column;align-items:center;gap:0;min-width:0}.hh{font-size:18px;line-height:22px}.hora strong{font-size:23px;line-height:25px}.chuva{font-size:18px;line-height:22px}
 .calcab{height:32px;display:flex;align-items:center;justify-content:space-between}.calcab b{font-size:23px}.calcab span{font-size:20px}
-.cal{height:222px;display:grid;grid-template-columns:100px 210px 1fr;gap:12px;min-width:0}
+.cal{height:222px;display:grid;grid-template-columns:100px 204px 1fr;gap:12px;min-width:0}
 .tile{height:196px;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}.tile .m{font-size:21px;letter-spacing:2px;font-weight:700}.tile .d{font-size:84px;font-weight:700;line-height:1.12}.tile .s{font-size:20px}
 .mes{font-size:22px;line-height:27px;font-weight:700;text-transform:capitalize}
 .grade{display:grid;grid-template-columns:repeat(7,1fr);align-content:start;row-gap:0}
