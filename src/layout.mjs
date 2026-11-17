@@ -6,18 +6,33 @@ import { MESES, SEMANA } from './calendario.mjs';
 const esc = (s = '') => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const grau = n => Number.isFinite(n) ? `${n}°` : '–';
 const numero = n => Number.isFinite(n) ? n : '–';
+const mm = n => !Number.isFinite(n) ? '–' : n > 0 && n < 1 ? '&lt;1' : Math.round(n);
+const hm = s => s ? s.replace(/^0/, '') : '–';
+const nivelUV = n => n >= 11 ? 'extremo' : n >= 8 ? 'muito alto' : n >= 6 ? 'alto' : n >= 3 ? 'moderado' : 'baixo';
+const uv = n => Number.isFinite(n) ? `UV ${Math.round(n)} · ${nivelUV(Math.round(n))}` : 'UV –';
+// Datas comemorativas inteiras, sem cortar no meio: entram enquanto couberem nas linhas disponíveis.
+function escolherComemorativas(lista = [], limite) {
+  const out = [];
+  for (const c of lista) {
+    if (out.length && [...out, c].join(' · ').length > limite) continue;
+    out.push(c);
+    if (out.length === 3) break;
+  }
+  return out;
+}
 
 export function paginaClima({ clima: c, cal, atualizado, fontesCSS = '' }) {
   const horas = c.horas.slice(0, 7).map(h => `<div class="hora"><span class="hh">${esc(h.hora)}</span>${icone(h.tipo, 34, 1.8)}<strong>${grau(h.temp)}</strong><span class="chuva">${numero(h.chuva)}%</span></div>`).join('');
   const cab = ['D','S','T','Q','Q','S','S'].map(d => `<div class="gc">${d}</div>`).join('');
   const dias = cal.grade.map(g => g ? `<div class="gd${g.hoje ? ' hoje' : ''}${g.feriado ? ' fer' : ''}">${g.dia}</div>` : '<div class="gd"></div>').join('');
-  const dia = (rotulo, d) => `<section class="dia"><div class="rotulo">${rotulo}</div><div class="range">${icone(d?.tipo, 38, 1.8)}<b>${grau(d?.max)} <span>/ ${grau(d?.min)}</span></b></div><p class="condicao">${esc(d?.descricao || 'Sem previsão')}</p><p class="detalhe">${numero(d?.chuva)}% de chuva</p><p class="detalhe">Vento ${numero(d?.vento ?? c.atual.vento)} km/h</p></section>`;
+  const dia = (rotulo, d) => `<section class="dia"><div class="rotulo">${rotulo}</div><div class="range">${icone(d?.tipo, 38, 1.8)}<b>${grau(d?.max)} <span>/ ${grau(d?.min)}</span></b></div><p class="condicao">${esc(d?.descricao || 'Sem previsão')}</p><p class="detalhe">Chuva ${numero(d?.chuva)}% · ${mm(d?.mm)} mm</p><p class="detalhe">${uv(d?.uv)}</p></section>`;
   const linhas = [];
   if (cal.feriado) {
     const rot = cal.feriado.tipo === 'feriado' ? 'Feriado' : cal.feriado.tipo === 'facultativo' ? 'Ponto facultativo' : 'Data especial';
     linhas.push(`<p class="li especial"><b>${rot}</b> ${esc(cal.feriado.nome)}</p>`);
   }
-  if (cal.comemorativas?.length) linhas.push(`<p class="li comemoracoes"><b>Comemora-se</b> ${cal.comemorativas.map(esc).join(' · ')}</p>`);
+  const comemorativas = escolherComemorativas(cal.comemorativas, cal.feriado ? 24 : 120);
+  if (comemorativas.length) linhas.push(`<p class="li comemoracoes"><b>Comemora-se</b> ${comemorativas.map(esc).join(' · ')}</p>`);
   if (cal.fato) linhas.push(`<p class="li fato"><b>Neste dia, em ${esc(cal.fato.ano)}</b> ${esc(cal.fato.texto)}.</p>`);
   if (cal.nascimento) linhas.push(`<p class="li nascimento"><b>Nasceu em ${esc(cal.nascimento.ano)}</b> ${esc(cal.nascimento.texto)}</p>`);
   if (!linhas.length) linhas.push('<p class="li">Nenhuma data especial hoje.</p>');
@@ -45,16 +60,16 @@ body{padding:14px 20px 5px;font-size:20px}
 .horas{height:111px;display:grid;grid-template-columns:repeat(7,1fr);border-bottom:2px solid #000;padding:6px 0 5px}
 .hora{display:flex;flex-direction:column;align-items:center;gap:0;min-width:0}.hh{font-size:18px;line-height:22px}.hora strong{font-size:23px;line-height:25px}.chuva{font-size:18px;line-height:22px}
 .calcab{height:32px;display:flex;align-items:center;justify-content:space-between}.calcab b{font-size:23px}.calcab span{font-size:20px}
-.cal{height:222px;display:grid;grid-template-columns:100px 204px 1fr;gap:12px;min-width:0}
-.tile{height:196px;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}.tile .m{font-size:21px;letter-spacing:2px;font-weight:700}.tile .d{font-size:84px;font-weight:700;line-height:1.12}.tile .s{font-size:20px}
+.cal{height:222px;display:grid;grid-template-columns:92px 228px 1fr;gap:12px;min-width:0}
+.tile{height:196px;background:#000;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center}.tile .m{font-size:21px;letter-spacing:2px;font-weight:700}.tile .d{font-size:80px;font-weight:700;line-height:1.12}.tile .s{font-size:20px}
 .mes{font-size:22px;line-height:27px;font-weight:700;text-transform:capitalize}
 .grade{display:grid;grid-template-columns:repeat(7,1fr);align-content:start;row-gap:0}
-.gc{font-size:20px;line-height:25px;font-weight:700;text-align:center}.gd{font-size:22px;text-align:center;height:28px;line-height:28px}.gd.fer{font-weight:700;text-decoration:underline}.gd.hoje{background:#000;color:#fff;font-weight:700;border-radius:2px}
+.gc{font-size:20px;line-height:25px;font-weight:700;text-align:center}.gd{font-size:21px;text-align:center;height:28px;line-height:28px}.gd.fer{font-weight:700;text-decoration:underline}.gd.hoje{background:#000;color:#fff;font-weight:700;border-radius:2px}
 .fatos{display:flex;flex-direction:column;gap:5px;min-width:0;height:222px;overflow:hidden;border-left:1px solid #000;padding-left:12px}
 .li{font-size:21px;line-height:23.5px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;flex-shrink:0}.li b{font-weight:700}.li.comemoracoes{-webkit-line-clamp:4}.li.fato{-webkit-line-clamp:3}.li.especial{font-weight:500}.li.especial b{background:#000;color:#fff;padding:0 4px}
 .tem-feriado .comemoracoes{-webkit-line-clamp:1}.tem-feriado .fato{-webkit-line-clamp:2}.tem-feriado .nascimento{-webkit-line-clamp:1}
 </style></head><body class="${cal.feriado ? 'tem-feriado' : ''}">
-<header class="topo"><div class="cidade">${esc(LOCAL.nome)} <span>· Minas Gerais</span></div><span class="atualizado">Atualizado ${esc(atualizado)}</span></header>
+<header class="topo"><div class="cidade">${esc(LOCAL.nome)} <span>· Sol ${hm(c.hoje?.nascer)} – ${hm(c.hoje?.por)}</span></div><!-- hora de atualização e próxima: desenhadas pelo Kindle neste espaço --></header>
 <main><div class="atual"><section class="agora"><div class="big">${icone(c.atual.tipo,105,1.45)}<strong class="temperatura">${grau(c.atual.temp)}</strong></div><p class="descricao">${esc(c.atual.descricao)}</p><p class="sensacao">Sensação ${grau(c.atual.sensacao)} · Umidade ${numero(c.atual.umidade)}%</p></section>${dia('Hoje',c.hoje)}${dia('Amanhã',c.amanha)}</div>
 <section class="horas" aria-label="Previsão por horário">${horas}</section>
 <header class="calcab"><b>Calendário</b><span>${esc(SEMANA[cal.semana].replace(/^./, x=>x.toUpperCase()))}, ${cal.dia} de ${MESES[cal.mes-1]} de ${cal.ano}</span></header>

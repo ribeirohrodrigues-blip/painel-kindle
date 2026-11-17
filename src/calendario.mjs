@@ -146,5 +146,5 @@ export async function obterCalendario(agora = new Date()) {
     grade.push({ dia: d, hoje: d === h.dia, feriado: f?.[0] === 'feriado' });
   }
 
-  return { ...h, feriado, comemorativas: comemorativas.slice(0, 3), fato, nascimento, grade };
+  return { ...h, feriado, comemorativas: comemorativas.slice(0, 8), fato, nascimento, grade };
 }

@@ -59,6 +59,10 @@ async function viaGoogle(chave) {
       descricao: capitalizar(cond?.description?.text),
       chuva: Math.max(d.daytimeForecast?.precipitation?.probability?.percent ?? 0, d.nighttimeForecast?.precipitation?.probability?.percent ?? 0),
       vento: Math.round(d.daytimeForecast?.wind?.speed?.value ?? 0),
+      mm: (d.daytimeForecast?.precipitation?.qpf?.quantity ?? 0) + (d.nighttimeForecast?.precipitation?.qpf?.quantity ?? 0),
+      uv: d.daytimeForecast?.uvIndex,
+      nascer: d.sunEvents?.sunriseTime ? horaLocal(d.sunEvents.sunriseTime) : null,
+      por: d.sunEvents?.sunsetTime ? horaLocal(d.sunEvents.sunsetTime) : null,
     };
   };
   const listaDias = (dias.forecastDays || []).map(dia);
@@ -111,7 +115,7 @@ async function viaOpenMeteo() {
     `https://api.open-meteo.com/v1/forecast?latitude=${LOCAL.lat}&longitude=${LOCAL.lon}` +
     '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day' +
     '&hourly=temperature_2m,precipitation_probability,weather_code,is_day' +
-    '&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code,wind_speed_10m_max' +
+    '&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,uv_index_max,sunrise,sunset,weather_code,wind_speed_10m_max' +
     `&timezone=${encodeURIComponent(LOCAL.fuso)}&forecast_days=10&timeformat=unixtime`;
   const d = await json(url);
   const c = d.current;
@@ -121,6 +125,10 @@ async function viaOpenMeteo() {
     min: Math.round(d.daily.temperature_2m_min[i]),
     chuva: d.daily.precipitation_probability_max[i] ?? 0,
     vento: Math.round(d.daily.wind_speed_10m_max[i] ?? 0),
+    mm: d.daily.precipitation_sum[i] ?? 0,
+    uv: d.daily.uv_index_max[i],
+    nascer: d.daily.sunrise[i] ? horaLocal(d.daily.sunrise[i] * 1000) : null,
+    por: d.daily.sunset[i] ? horaLocal(d.daily.sunset[i] * 1000) : null,
     ...wmo(d.daily.weather_code[i]),
   }));
   return {
